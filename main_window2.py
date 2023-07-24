@@ -152,7 +152,7 @@ class MyWindow2(QWidget):
             temp_low, temp_high = self._get_trans_index_range(self.curr_index)
             for i in range(temp_low, temp_high + 1):
                 # 首先检查是否是英文
-                if not is_chinese(self.items_list[i].text()[0]):
+                if not is_chinese(self.items_list[i].text()[-1]):
                     if self.info_list[i][2] != '翻译失败！' and self.info_list[i][2] != '':
                         text = self.items_list[i].text()
                         if text:
@@ -181,7 +181,7 @@ class MyWindow2(QWidget):
         return temp_low, temp_high
 
     def _list_view_itemClicked(self, current):
-        self._translate_switch_toggled(self.trans_flag)
+        self._translate_switch_toggled(self.translate_switch.isChecked())
         self.selected_items = self.list_view.selectedItems()
         if len(self.selected_items) > 1:
             # 将复选框全部取消勾选
@@ -219,7 +219,34 @@ class MyWindow2(QWidget):
         self._list_view_itemClicked(current)
 
     def _switch_btn_clicked(self):
-        pass
+        if self.saved_dir_name:
+            self._save_btn_clicked()
+
+            # 隐藏控件
+            self.hide()
+
+            self.window1 = MyWindow1()
+            try:
+                self.window1.show()
+            except Exception as e:
+                self.window1._save_btn_clicked()
+                print(e)
+
+            if os.path.exists(os.path.join(AssetsPath, 'last_loaded_dir_path.pkl')):
+                self.window1.saved_dir_name = load_pickle(os.path.join(AssetsPath, 'last_loaded_dir_path.pkl'))
+                self.window1._base_load(self.window1.saved_dir_name)
+                self.window1._enable_some_buttons()
+            else:
+                self.window1.status_bar.showMessage('缺失关键文件！请手动加载！')
+
+        else:
+            # 隐藏控件
+            self.hide()
+
+            self.window1 = MyWindow1()
+            self.window1.show()
+
+            self.window1._load_btn_clicked()
 
     def _disable_some_buttons(self):
         self.last_btn.setDisabled(True)
@@ -240,30 +267,7 @@ class MyWindow2(QWidget):
         self.export_btn.setEnabled(True)
 
     def _export_btn_clicked(self):
-        if self.saved_dir_name:
-            # 先保存文件
-            self._save_btn_clicked()
-
-            curr_time = str(int(time.time()))
-
-            saved_xml_dir = QFileDialog.getExistingDirectory(self, "导出的文件存放于哪个文件夹？", '')
-
-            # 导出纳入文献
-            included_record_list = list(map(lambda x: self.record_text_list[x], self.included_set))
-            if included_record_list:
-                export_selected_refs(included_record_list, '纳入', saved_xml_dir)
-
-            # 导出问题文献
-            question_record_list = list(map(lambda x: self.record_text_list[x], self.question_set))
-            if question_record_list:
-                export_selected_refs(question_record_list, '问题', saved_xml_dir)
-
-            # 导出排除文献
-            excluded_record_list = list(map(lambda x: self.record_text_list[x], self.excluded_set))
-            if excluded_record_list:
-                export_selected_refs(excluded_record_list, '排除', saved_xml_dir)
-        else:
-            self.status_bar.showMessage('目前还不能导出！', 2000)
+        pass
 
     def _save_btn_clicked(self):
         included_save_path = os.path.join(self.saved_dir_name, 'included_set.pkl')
@@ -303,7 +307,6 @@ class MyWindow2(QWidget):
         item.setIcon(self.exclude_icon)
 
     def _checkbox_include_toggled(self, checked):
-        print('yihui')
         if len(self.selected_items) > 1:
             if checked:
                 for selected_item in self.selected_items:
@@ -389,6 +392,9 @@ class MyWindow2(QWidget):
 
         # 加载当前复选框的选择
         self._set_checkbox_status()
+
+        # 显示当前导入文献数量
+        self.status_bar.showMessage(str(self.max_num), 5000)
 
     def _no_filters(self):
         self.items_list = []

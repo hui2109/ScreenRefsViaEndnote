@@ -142,7 +142,6 @@ class MyWindow1(QWidget):
         layout_final.addLayout(layout_filter_list_switch, 2)
 
         self.setLayout(layout_final)
-        self.showMaximized()
 
     def widgetsAdjust(self):
         """
@@ -195,6 +194,8 @@ class MyWindow1(QWidget):
 
         self.saved_dir_name = None
         self.info_list = []
+
+        self.showMaximized()
 
     def bind_signal_func(self):
         self.parse_btn.clicked.connect(self._parse_btn_clicked)
@@ -250,6 +251,8 @@ class MyWindow1(QWidget):
         self.copy_en_abs_btn.setShortcut('Ctrl+F')
         self.translate_en_abs_btn.setShortcut(Qt.Key.Key_F)
 
+        self.switch_btn.setShortcut(Qt.Key.Key_K)
+
     def _translate_zh_btn_clicked(self):
         if self.info_list:
             if self.info_list[self.curr_index][2] != '翻译失败！' and self.info_list[self.curr_index][2] != '':
@@ -299,10 +302,6 @@ class MyWindow1(QWidget):
             self.abs_text_zh.setText(contents)
 
     def _switch_btn_clicked(self):
-        # # 隐藏控件
-        # self.hide()
-        # self.window2 = MyWindow2()
-        # self.window2.show()
         pass
 
     def _filter_activated(self, index):
@@ -329,25 +328,25 @@ class MyWindow1(QWidget):
             self.list_view.currentItemChanged.connect(self._item_changed)
 
     def _add_filtered_items(self, category):
-        temp_num = set()
+        temp_num = []
         if category == 'include':
-            temp_num = self.included_set
+            temp_num = list(self.included_set)
         elif category == 'question':
-            temp_num = self.question_set
+            temp_num = list(self.question_set)
         elif category == 'exclude':
-            temp_num = self.excluded_set
+            temp_num = list(self.excluded_set)
         elif category == 'unsorted':
             unsorted_set = set(range(self.max_num))
-            if not len(self.included_set) == 0:
-                list(map(lambda x: unsorted_set.remove(x), self.included_set))
-            if not len(self.question_set) == 0:
-                list(map(lambda x: unsorted_set.remove(x), self.question_set))
-            if not len(self.excluded_set) == 0:
-                list(map(lambda x: unsorted_set.remove(x), self.excluded_set))
-            temp_num = unsorted_set
+            unsorted_set = unsorted_set - self.included_set - self.question_set - self.excluded_set
+            temp_num = list(unsorted_set)
+
+        self.temp_num = temp_num
+        self.max_num_filter = len(self.temp_num)
+        self.curr_index_filter = None
 
         if temp_num:
-            self.items_list = []
+            self.curr_index_filter = 0
+            self.items_list_filtered = []
             for i in temp_num:
                 item = QListWidgetItem(self.info_list[i][0].replace('\n', ' '), self.list_view)
 
@@ -363,10 +362,10 @@ class MyWindow1(QWidget):
                 font = QFont('Times New Roman', 16)
                 item.setFont(font)
 
-                self.items_list.append(item)
+                self.items_list_filtered.append(item)
 
             self.list_view.currentItemChanged.connect(self._item_changed)
-            self.list_view.setCurrentItem(self.items_list[0])
+            self.list_view.setCurrentItem(self.items_list_filtered[self.curr_index_filter])
         else:
             self.list_view.clear()
             self.list_view.currentItemChanged.connect(self._item_changed)
@@ -399,6 +398,9 @@ class MyWindow1(QWidget):
             curr_time = str(int(time.time()))
 
             saved_xml_dir = QFileDialog.getExistingDirectory(self, "导出的文件存放于哪个文件夹？", '')
+            if saved_xml_dir == '':
+                self.status_bar.showMessage('取消选择导出路径！', 2000)
+                return None
 
             # 导出纳入文献
             included_record_list = list(map(lambda x: self.record_text_list[x], self.included_set))
@@ -414,6 +416,15 @@ class MyWindow1(QWidget):
             excluded_record_list = list(map(lambda x: self.record_text_list[x], self.excluded_set))
             if excluded_record_list:
                 export_selected_refs(excluded_record_list, '排除', saved_xml_dir)
+
+            # 导出未分类文献
+            unsorted_set = set(range(self.max_num))
+            unsorted_set = unsorted_set - self.included_set - self.question_set - self.excluded_set
+            unsorted_record_list = list(map(lambda x: self.record_text_list[x], unsorted_set))
+            if unsorted_record_list:
+                export_selected_refs(unsorted_record_list, '未分类', saved_xml_dir)
+
+            self.status_bar.showMessage('已成功导出！', 2000)
         else:
             self.status_bar.showMessage('目前还不能导出！', 2000)
 
@@ -454,6 +465,10 @@ class MyWindow1(QWidget):
         self.curr_item.setIcon(self.exclude_icon)
 
     def _checkbox_include_toggled(self, checked):
+        if self.filter.currentIndex() != 0 and self.curr_index_filter is None:
+            # 进入过滤器模式
+            return None
+
         if checked:
             self.included_set.add(self.curr_index)
             self._add_include_item_icon()
@@ -462,6 +477,10 @@ class MyWindow1(QWidget):
             self._cancel_item_icon()
 
     def _checkbox_question_toggled(self, checked):
+        if self.filter.currentIndex() != 0 and self.curr_index_filter is None:
+            # 进入过滤器模式
+            return None
+
         if checked:
             self.question_set.add(self.curr_index)
             self._add_question_item_icon()
@@ -470,6 +489,10 @@ class MyWindow1(QWidget):
             self._cancel_item_icon()
 
     def _checkbox_exclude_toggled(self, checked):
+        if self.filter.currentIndex() != 0 and self.curr_index_filter is None:
+            # 进入过滤器模式
+            return None
+
         if checked:
             self.excluded_set.add(self.curr_index)
             self._add_exclude_item_icon()
@@ -497,6 +520,9 @@ class MyWindow1(QWidget):
 
         # 加载当前复选框的选择
         self._set_checkbox_status()
+
+        # 显示当前导入文献数量
+        self.status_bar.showMessage(str(self.max_num), 5000)
 
     def _no_filters(self):
         self.items_list = []
@@ -538,6 +564,18 @@ class MyWindow1(QWidget):
             self.status_bar.showMessage('复制内容为空！', 2000)
 
     def _last_btn_clicked(self):
+        if self.filter.currentIndex() != 0:
+            # 进入过滤器模式
+            if self.curr_index_filter is not None:
+                if self.curr_index_filter == 0:
+                    self.curr_index_filter = self.max_num_filter - 1
+                else:
+                    self.curr_index_filter -= 1
+                self.list_view.setCurrentItem(self.items_list_filtered[self.curr_index_filter])
+                return None
+            else:
+                return None
+
         if self.curr_index == 0:
             self.curr_index = self.max_num - 1
         else:
@@ -545,6 +583,18 @@ class MyWindow1(QWidget):
         self.list_view.setCurrentItem(self.items_list[self.curr_index])
 
     def _next_btn_clicked(self):
+        if self.filter.currentIndex() != 0:
+            # 进入过滤器模式
+            if self.curr_index_filter is not None:
+                if self.curr_index_filter == self.max_num_filter - 1:
+                    self.curr_index_filter = 0
+                else:
+                    self.curr_index_filter += 1
+                self.list_view.setCurrentItem(self.items_list_filtered[self.curr_index_filter])
+                return None
+            else:
+                return None
+
         if self.curr_index == self.max_num - 1:
             self.curr_index = 0
         else:
@@ -641,7 +691,7 @@ class MyWindow1(QWidget):
         self.title_text_en.clear()
         self.abs_text_en.clear()
 
-        if is_chinese(curr_title[0]):
+        if is_chinese(curr_title[-1]):
             self.title_text_zh.setText(curr_title)
             self.abs_text_zh.setText(curr_abstract)
         else:
