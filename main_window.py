@@ -362,12 +362,7 @@ class MyWindow1(QWidget):
             temp_num = self.excluded_set
         elif category == 'unsorted':
             unsorted_set = set(range(self.max_num))
-            if not len(self.included_set) == 0:
-                list(map(lambda x: unsorted_set.remove(x), self.included_set))
-            if not len(self.question_set) == 0:
-                list(map(lambda x: unsorted_set.remove(x), self.question_set))
-            if not len(self.excluded_set) == 0:
-                list(map(lambda x: unsorted_set.remove(x), self.excluded_set))
+            unsorted_set = unsorted_set - self.included_set - self.question_set - self.excluded_set
             temp_num = unsorted_set
 
         if temp_num:
@@ -444,12 +439,7 @@ class MyWindow1(QWidget):
 
             # 导出未分类文献
             unsorted_set = set(range(self.max_num))
-            if not len(self.included_set) == 0:
-                list(map(lambda x: unsorted_set.remove(x), self.included_set))
-            if not len(self.question_set) == 0:
-                list(map(lambda x: unsorted_set.remove(x), self.question_set))
-            if not len(self.excluded_set) == 0:
-                list(map(lambda x: unsorted_set.remove(x), self.excluded_set))
+            unsorted_set = unsorted_set - self.included_set - self.question_set - self.excluded_set
             unsorted_record_list = list(map(lambda x: self.record_text_list[x], unsorted_set))
             if unsorted_record_list:
                 export_selected_refs(unsorted_record_list, '未分类', saved_xml_dir)
@@ -1025,12 +1015,12 @@ class MyWindow2(QWidget):
             saved_xml_dir = QFileDialog.getExistingDirectory(self, "导出的文件存放于哪个文件夹？", '')
             if saved_xml_dir == '':
                 self.status_bar.showMessage('取消选择导出路径！', 2000)
+                return None
 
             # 导出纳入文献
             included_record_list = list(map(lambda x: self.record_text_list[x], self.included_set))
             if included_record_list:
                 export_selected_refs(included_record_list, '纳入', saved_xml_dir)
-                return None
 
             # 导出问题文献
             question_record_list = list(map(lambda x: self.record_text_list[x], self.question_set))
@@ -1044,12 +1034,7 @@ class MyWindow2(QWidget):
 
             # 导出未分类文献
             unsorted_set = set(range(self.max_num))
-            if not len(self.included_set) == 0:
-                list(map(lambda x: unsorted_set.remove(x), self.included_set))
-            if not len(self.question_set) == 0:
-                list(map(lambda x: unsorted_set.remove(x), self.question_set))
-            if not len(self.excluded_set) == 0:
-                list(map(lambda x: unsorted_set.remove(x), self.excluded_set))
+            unsorted_set = unsorted_set - self.included_set - self.question_set - self.excluded_set
             unsorted_record_list = list(map(lambda x: self.record_text_list[x], unsorted_set))
             if unsorted_record_list:
                 export_selected_refs(unsorted_record_list, '未分类', saved_xml_dir)
