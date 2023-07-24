@@ -1,0 +1,5 @@
+lxml==4.9.3
+pycryptodome==3.18.0
+PyQt6==6.5.1
+PyQt6_sip==13.5.1
+Requests==2.31.0

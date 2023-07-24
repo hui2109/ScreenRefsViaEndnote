@@ -1,0 +1,27 @@
+#list_view2::item {
+                height: 60px;           /* Set the height of each QListWidgetItem */
+            }
+
+#switch_btn2 {
+        width: 40px;
+        height: 40px;
+}
+
+QCheckBox {
+        font-size: 16px;        /* Set the font size of the checkbox label */
+        icon-size: 24px;        /* Set the icon size */
+        }
+
+QCheckBox::indicator {
+    width: 20px;            /* Set the width of the checkbox indicator */
+    height: 20px;           /* Set the height of the checkbox indicator */
+}
+
+QListWidget::item {
+    height: 40px;           /* Set the height of each QListWidgetItem */
+}
+
+QTextEdit {
+    font-size: 14pt;                   /* Set the font size to 16 points */
+    font-family: 'Times New Roman';    /* Set the font family to Times New Roman */
+}
