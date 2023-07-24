@@ -142,7 +142,6 @@ class MyWindow1(QWidget):
         layout_final.addLayout(layout_filter_list_switch, 2)
 
         self.setLayout(layout_final)
-        self.showMaximized()
 
     def widgetsAdjust(self):
         """
@@ -195,6 +194,8 @@ class MyWindow1(QWidget):
 
         self.saved_dir_name = None
         self.info_list = []
+
+        self.showMaximized()
 
     def bind_signal_func(self):
         self.parse_btn.clicked.connect(self._parse_btn_clicked)
@@ -422,6 +423,9 @@ class MyWindow1(QWidget):
             curr_time = str(int(time.time()))
 
             saved_xml_dir = QFileDialog.getExistingDirectory(self, "导出的文件存放于哪个文件夹？", '')
+            if saved_xml_dir == '':
+                self.status_bar.showMessage('取消选择导出路径！', 2000)
+                return None
 
             # 导出纳入文献
             included_record_list = list(map(lambda x: self.record_text_list[x], self.included_set))
@@ -437,6 +441,18 @@ class MyWindow1(QWidget):
             excluded_record_list = list(map(lambda x: self.record_text_list[x], self.excluded_set))
             if excluded_record_list:
                 export_selected_refs(excluded_record_list, '排除', saved_xml_dir)
+
+            # 导出未分类文献
+            unsorted_set = set(range(self.max_num))
+            if not len(self.included_set) == 0:
+                list(map(lambda x: unsorted_set.remove(x), self.included_set))
+            if not len(self.question_set) == 0:
+                list(map(lambda x: unsorted_set.remove(x), self.question_set))
+            if not len(self.excluded_set) == 0:
+                list(map(lambda x: unsorted_set.remove(x), self.excluded_set))
+            unsorted_record_list = list(map(lambda x: self.record_text_list[x], unsorted_set))
+            if unsorted_record_list:
+                export_selected_refs(unsorted_record_list, '未分类', saved_xml_dir)
 
             self.status_bar.showMessage('已成功导出！', 2000)
         else:
@@ -522,6 +538,9 @@ class MyWindow1(QWidget):
 
         # 加载当前复选框的选择
         self._set_checkbox_status()
+
+        # 显示当前导入文献数量
+        self.status_bar.showMessage(str(self.max_num), 5000)
 
     def _no_filters(self):
         self.items_list = []
@@ -666,7 +685,7 @@ class MyWindow1(QWidget):
         self.title_text_en.clear()
         self.abs_text_en.clear()
 
-        if is_chinese(curr_title[0]):
+        if is_chinese(curr_title[-1]):
             self.title_text_zh.setText(curr_title)
             self.abs_text_zh.setText(curr_abstract)
         else:
@@ -882,7 +901,7 @@ class MyWindow2(QWidget):
             temp_low, temp_high = self._get_trans_index_range(self.curr_index)
             for i in range(temp_low, temp_high + 1):
                 # 首先检查是否是英文
-                if not is_chinese(self.items_list[i].text()[0]):
+                if not is_chinese(self.items_list[i].text()[-1]):
                     if self.info_list[i][2] != '翻译失败！' and self.info_list[i][2] != '':
                         text = self.items_list[i].text()
                         if text:
@@ -1004,11 +1023,14 @@ class MyWindow2(QWidget):
             curr_time = str(int(time.time()))
 
             saved_xml_dir = QFileDialog.getExistingDirectory(self, "导出的文件存放于哪个文件夹？", '')
+            if saved_xml_dir == '':
+                self.status_bar.showMessage('取消选择导出路径！', 2000)
 
             # 导出纳入文献
             included_record_list = list(map(lambda x: self.record_text_list[x], self.included_set))
             if included_record_list:
                 export_selected_refs(included_record_list, '纳入', saved_xml_dir)
+                return None
 
             # 导出问题文献
             question_record_list = list(map(lambda x: self.record_text_list[x], self.question_set))
@@ -1019,6 +1041,18 @@ class MyWindow2(QWidget):
             excluded_record_list = list(map(lambda x: self.record_text_list[x], self.excluded_set))
             if excluded_record_list:
                 export_selected_refs(excluded_record_list, '排除', saved_xml_dir)
+
+            # 导出未分类文献
+            unsorted_set = set(range(self.max_num))
+            if not len(self.included_set) == 0:
+                list(map(lambda x: unsorted_set.remove(x), self.included_set))
+            if not len(self.question_set) == 0:
+                list(map(lambda x: unsorted_set.remove(x), self.question_set))
+            if not len(self.excluded_set) == 0:
+                list(map(lambda x: unsorted_set.remove(x), self.excluded_set))
+            unsorted_record_list = list(map(lambda x: self.record_text_list[x], unsorted_set))
+            if unsorted_record_list:
+                export_selected_refs(unsorted_record_list, '未分类', saved_xml_dir)
 
             self.status_bar.showMessage('已成功导出！', 2000)
         else:
@@ -1147,6 +1181,9 @@ class MyWindow2(QWidget):
 
         # 加载当前复选框的选择
         self._set_checkbox_status()
+
+        # 显示当前导入文献数量
+        self.status_bar.showMessage(str(self.max_num), 5000)
 
     def _no_filters(self):
         self.items_list = []
