@@ -258,6 +258,8 @@ class MyWindow1(QWidget):
             if self.info_list[self.curr_index][2] != '翻译失败！' and self.info_list[self.curr_index][2] != '':
                 self.title_text_en.setText(self.info_list[self.curr_index][2])
             else:
+                # 先保存，在翻译
+                self._save_btn_clicked()
                 contents = translated_content(self.title_text_zh.toPlainText())
                 self.info_list[self.curr_index][2] = contents
                 self.title_text_en.setText(contents)
@@ -270,6 +272,8 @@ class MyWindow1(QWidget):
             if self.info_list[self.curr_index][2] != '翻译失败！' and self.info_list[self.curr_index][2] != '':
                 self.title_text_zh.setText(self.info_list[self.curr_index][2])
             else:
+                # 先保存，在翻译
+                self._save_btn_clicked()
                 contents = translated_content(self.title_text_en.toPlainText())
                 self.info_list[self.curr_index][2] = contents
                 self.title_text_zh.setText(contents)
@@ -282,6 +286,8 @@ class MyWindow1(QWidget):
             if self.info_list[self.curr_index][3] != '翻译失败！' and self.info_list[self.curr_index][3] != '':
                 self.abs_text_en.setText(self.info_list[self.curr_index][3])
             else:
+                # 先保存，在翻译
+                self._save_btn_clicked()
                 contents = translated_content(self.abs_text_zh.toPlainText())
                 self.info_list[self.curr_index][3] = contents
                 self.abs_text_en.setText(contents)
@@ -294,6 +300,8 @@ class MyWindow1(QWidget):
             if self.info_list[self.curr_index][3] != '翻译失败！' and self.info_list[self.curr_index][3] != '':
                 self.abs_text_zh.setText(self.info_list[self.curr_index][3])
             else:
+                # 先保存，在翻译
+                self._save_btn_clicked()
                 contents = translated_content(self.abs_text_en.toPlainText())
                 self.info_list[self.curr_index][3] = contents
                 self.abs_text_zh.setText(contents)
@@ -549,7 +557,7 @@ class MyWindow1(QWidget):
         self._set_checkbox_status()
 
         # 显示当前导入文献数量
-        self.status_bar.showMessage(str(self.max_num), 5000)
+        self.status_bar.showMessage('已成功导入文献 ' + str(self.max_num) + ' 篇！', 5000)
 
     def _no_filters(self):
         self.items_list = []
@@ -943,6 +951,8 @@ class MyWindow2(QWidget):
                         else:
                             self.items_list[i].setText(self.info_list[i][2])
                     else:
+                        # 先保存，在翻译
+                        self._save_btn_clicked()
                         contents = translated_content(self.items_list[i].text())
                         self.info_list[i][2] = contents
                         text = self.items_list[i].text()
@@ -1211,7 +1221,7 @@ class MyWindow2(QWidget):
         self._set_checkbox_status()
 
         # 显示当前导入文献数量
-        self.status_bar.showMessage(str(self.max_num), 5000)
+        self.status_bar.showMessage('已成功导入文献 ' + str(self.max_num) + ' 篇！', 5000)
 
     def _no_filters(self):
         self.items_list = []

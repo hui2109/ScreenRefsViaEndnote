@@ -46,7 +46,7 @@ def parse_xml(path=XMLPath):
     record = tree.xpath('//record')
 
     for rec in record:
-        titles_list = rec.xpath('./titles//text()')
+        titles_list = rec.xpath('./titles/title//text()')
         abstracts_list = rec.xpath('./abstract//text()')
         titles = '\n'.join(titles_list).strip()
         abstracts = '\n'.join(abstracts_list).strip()
