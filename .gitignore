@@ -166,3 +166,7 @@ assets/*
 !assets/icons/
 !assets/myStyleSheet.qss
 !assets/template.xml
+
+sources/*
+!sources/source.xml
+!sources/乱码中文.xml
